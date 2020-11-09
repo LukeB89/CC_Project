@@ -3,3 +3,6 @@
 
 # no logfiles
 log.txt
+
+# no venv data
+venv\
