@@ -1,0 +1,5 @@
+# no .ini files
+*.ini
+
+# no logfiles
+log.txt
