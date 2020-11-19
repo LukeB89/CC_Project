@@ -32,6 +32,8 @@ def index(request):
 
 def get_groups(request):
     in_email = json.load(request)
+    print("Get_Groups: ")
+    print(in_email)
     query = ("SELECT * FROM user_groups WHERE email='{}'".format(in_email['user']))
     cnx = mysql.connector.connect(user=user, password=password, host=host, database=database, port=port)
     cursor = cnx.cursor()
@@ -64,6 +66,8 @@ def get_groups(request):
 
 def get_events(request):
     in_data = json.load(request)
+    print("get_events: ")
+    print(in_data)
     cnx = mysql.connector.connect(user=user, password=password, host=host, database=database, port=port)
     cursor = cnx.cursor()
     query = ("SELECT * FROM events WHERE user_group = {}".format(in_data['user_group']))
@@ -95,6 +99,8 @@ def get_events(request):
 
 def update_user(request):
     in_data = json.load(request)
+    print("update_user: ")
+    print(in_data)
     cnx = mysql.connector.connect(user=user, password=password, host=host, database=database, port=port)
     cursor = cnx.cursor()
     if 'pg_id' not in in_data:
@@ -134,6 +140,8 @@ def update_user(request):
 
 
 def check_events(data):
+    print("check_events: ")
+    print(data)
     cnx = mysql.connector.connect(user=user, password=password, host=host, database=database, port=port)
     cursor = cnx.cursor()
 
@@ -199,6 +207,7 @@ def check_events(data):
 
 def update_events(request):
     in_data = json.load(request)
+    print("update_events: ")
     print(in_data)
     cnx = mysql.connector.connect(user=user, password=password, host=host, database=database, port=port)
     cursor = cnx.cursor()
