@@ -20,8 +20,7 @@ config = ConfigParser()
 config.read(BASE_DIR + "/config.ini")
 options = config["Django"]
 secret_key = options["secret_key"]
-with open('log.txt', 'a') as f:
-    f.write(secret_key)
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
@@ -63,7 +62,7 @@ ROOT_URLCONF = 'cc_proj.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'static')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -75,6 +74,9 @@ TEMPLATES = [
         },
     },
 ]
+#
+# TEMPLATE_DIR =  os.path.join(BASE_DIR, 'static')
+
 
 WSGI_APPLICATION = 'cc_proj.wsgi.application'
 
@@ -127,3 +129,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
