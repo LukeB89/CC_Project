@@ -19,21 +19,16 @@ database = options["database"]
 port = options["port"]
 
 def index(request):
+    # used to render the index page
     with open('log.txt', 'w') as f:
         f.write("load\n")
-        # f.writelines(host)
-        # f.writelines(user)
-        # f.writelines(password)
-        # f.writelines(database)
-        # f.writelines(port)
 
     return render(request, 'index.html')
 
 
 def get_groups(request):
+    #  function to obtain the list of groups both personal and associated and pass them back to be rendered
     in_email = json.load(request)
-    print("Get_Groups: ")
-    print(in_email)
     query = ("SELECT * FROM user_groups WHERE email='{}'".format(in_email['user']))
     cnx = mysql.connector.connect(user=user, password=password, host=host, database=database, port=port)
     cursor = cnx.cursor()
@@ -65,18 +60,20 @@ def get_groups(request):
 
 
 def get_events(request):
+    # function to obtain the list of event and pass them back to be rendered
     in_data = json.load(request)
-    print("get_events: ")
-    print(in_data)
+    events = []
     cnx = mysql.connector.connect(user=user, password=password, host=host, database=database, port=port)
     cursor = cnx.cursor()
-    query = ("SELECT * FROM events WHERE user_group = {}".format(in_data['user_group']))
+    if 'filter' in in_data and in_data['filter'] is not '0':
+        query = ("SELECT * FROM events WHERE user_group = {} AND event_group = {}".format(in_data['user_group'], in_data['filter']))
+    else:
+        query = ("SELECT * FROM events WHERE user_group = {}".format(in_data['user_group']))
+
     cursor.execute(query)
-    events = []
-    for (user_group, event_name, event_start_dt, event_end_dt, event_id) in cursor:
-        event = {}
-        event['title'] = event_name
-        event['id'] = event_id
+
+    for (user_group, event_name, event_start_dt, event_end_dt, event_id, event_group, description) in cursor:
+        event = {'title': event_name, 'id': event_id, 'groupId': event_group, 'description': description}
         start = str(event_start_dt).split(" ")
         if event_end_dt is not None:
             end = str(event_end_dt).split(" ")
@@ -92,15 +89,15 @@ def get_events(request):
             event['start'] = start[0] + "T" + start[1]
             if end is not None:
                 event['end'] = end[0] + "T" + end[1]
-
         events.append(event)
     data = {'user_group':in_data['user_group'],'events':events}
+    if 'filter' in in_data:
+        data['filter'] = in_data['filter']
     return JsonResponse(data, safe=False)
 
 def update_user(request):
+    # function to update a user. This is for insert and update
     in_data = json.load(request)
-    print("update_user: ")
-    print(in_data)
     cnx = mysql.connector.connect(user=user, password=password, host=host, database=database, port=port)
     cursor = cnx.cursor()
     if 'pg_id' not in in_data:
@@ -109,7 +106,6 @@ def update_user(request):
             cursor.execute(query)
             rows = cursor.fetchall()
             if len(rows) > 0:
-                print(rows)
                 if rows[0][1] == 'NA':
                     query = ("UPDATE user_groups SET ag_ids = '{}' WHERE email = '{}';".format(in_data['ag_ids'], in_data['email']))
                 elif str(in_data['ag_ids']) in rows[0][1]:
@@ -132,6 +128,8 @@ def update_user(request):
             cursor.execute(query)
             cnx.commit()
     except mysql.connector.Error as err:
+        with open('log.txt', 'w') as f:
+            f.write("err: {}\n".format(err))
         print("err: {}".format(err))
 
     cursor.close()
@@ -140,8 +138,7 @@ def update_user(request):
 
 
 def check_events(data):
-    print("check_events: ")
-    print(data)
+    # this function is used to check if event is in the systems to prevent updating non-events
     cnx = mysql.connector.connect(user=user, password=password, host=host, database=database, port=port)
     cursor = cnx.cursor()
 
@@ -155,7 +152,6 @@ def check_events(data):
 
     cursor.execute(query)
     rows = cursor.fetchall()
-    print(rows)
     cursor.close()
     cnx.close()
     if len(rows) > 0:
@@ -206,23 +202,22 @@ def check_events(data):
 
 
 def update_events(request):
+    #  function used to update events. Both insert and update methods
     in_data = json.load(request)
-    print("update_events: ")
-    print(in_data)
     cnx = mysql.connector.connect(user=user, password=password, host=host, database=database, port=port)
     cursor = cnx.cursor()
     if 'drop' in in_data:
         query = ("DELETE FROM events WHERE event_id = {}".format(in_data['event_id']))
     elif 'event_id' in in_data:
         if 'event_end_dt' in in_data:
-            query = ("UPDATE events SET event_name = '{}', event_start_dt = '{}', event_end_dt = '{}' WHERE event_id = {}".format(in_data['event_name'],in_data['event_start_dt'],in_data['event_end_dt'],in_data['event_id']))
+            query = ("UPDATE events SET event_name = '{}', event_start_dt = '{}', event_end_dt = '{}', event_group = {}, description = '{}' WHERE event_id = {}".format(in_data['event_name'],in_data['event_start_dt'],in_data['event_end_dt'],in_data['event_group'],in_data['description'],in_data['event_id']))
         else:
-            query = ("UPDATE events SET event_name = '{}', event_start_dt = '{}' WHERE event_id = {}".format(in_data['event_name'], in_data['event_start_dt'], in_data['event_id']))
+            query = ("UPDATE events SET event_name = '{}', event_start_dt = '{}', event_group = {}, description = '{}' WHERE event_id = {}".format(in_data['event_name'], in_data['event_start_dt'],in_data['event_group'],in_data['description'], in_data['event_id']))
     else:
         if 'event_end_dt' in in_data:
-            query = ("INSERT INTO events (user_group,event_name,event_start_dt,event_end_dt) VALUES ({},'{}','{}','{}')".format(in_data['user_group'],in_data['event_name'],in_data['event_start_dt'],in_data['event_end_dt']))
+            query = ("INSERT INTO events (user_group,event_name,event_start_dt,event_end_dt,event_group,description) VALUES ({},'{}','{}','{}',{},'{}')".format(in_data['user_group'],in_data['event_name'],in_data['event_start_dt'],in_data['event_end_dt'],in_data['event_group'],in_data['description']))
         else:
-            query = ("INSERT INTO events (user_group,event_name,event_start_dt) VALUES ({},'{}','{}')".format(in_data['user_group'], in_data['event_name'], in_data['event_start_dt']))
+            query = ("INSERT INTO events (user_group,event_name,event_start_dt,event_group,description) VALUES ({},'{}','{}',{},'{}')".format(in_data['user_group'], in_data['event_name'], in_data['event_start_dt'],in_data['event_group'],in_data['description']))
 
     data = {}
     if 'event_id' in in_data or check_events(in_data):

@@ -29,7 +29,7 @@ SECRET_KEY = secret_key
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
+# Updated to allow specific domain names
 ALLOWED_HOSTS = [
         'ec2-3-250-87-130.eu-west-1.compute.amazonaws.com',
         'localhost',

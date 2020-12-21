@@ -1,0 +1,18 @@
+/*Non-Generic Styles*/
+#index{
+  display: inline-block;
+  width: 20vw;
+}
+#calendar{
+  display: inline-block;
+  width: 60vw;
+}
+#filter{
+  display: inline-block;
+  width: 15vw;
+  margin-left: 2vw;
+  float: right;
+}
+.container{
+  display: block;
+}

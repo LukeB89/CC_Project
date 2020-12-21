@@ -13,9 +13,10 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+# generic django template
 from django.urls import path
 from . import views
-
+# paths from frontend and corresponding link to backend
 urlpatterns = [
     path('', views.index, name='index'),
     path('get_events',views.get_events, name='events'),
