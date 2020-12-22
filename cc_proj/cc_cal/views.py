@@ -65,7 +65,7 @@ def get_events(request):
     events = []
     cnx = mysql.connector.connect(user=user, password=password, host=host, database=database, port=port)
     cursor = cnx.cursor()
-    if 'filter' in in_data and in_data['filter'] is not '0':
+    if 'filter' in in_data and in_data['filter'] != '0':
         query = ("SELECT * FROM events WHERE user_group = {} AND event_group = {}".format(in_data['user_group'], in_data['filter']))
     else:
         query = ("SELECT * FROM events WHERE user_group = {}".format(in_data['user_group']))
