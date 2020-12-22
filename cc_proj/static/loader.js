@@ -95,7 +95,13 @@ function get_groups(email) {
     // email - if supplied use this if not get email from text box.
 
     if(typeof(email) == 'undefined' && email == null){
-        post('/get_groups',{'user':document.getElementById('user_box').value}, build_gSelect);
+        let emailEl = document.getElementById('user_box').value
+        if(emailEl == "" || typeof(emailEl) == 'undefined' || emailEl == null ){
+            alert("All Fields Must Be Filled");
+        }else{
+            post('/get_groups',{'user':emailEl}, build_gSelect);
+        }
+
     }else{
         post('/get_groups',{'user':email}, build_gSelect);
     }
@@ -606,12 +612,17 @@ function update_event(type){
         data['event_start_dt'] = start_date;
         data['event_end_dt'] = end_date;
     }else{
+
         data['event_start_dt'] = start_date + "T" + start_time;
         data['event_end_dt'] = end_date + "T" + end_time;
     }
     // if any fields are empty do not post
     if (data["event_name"] === "" || data['event_start_dt'] === "T" || data['event_end_dt'] === "T" || data["description"] == ""){
         alert("All Fields Except Toggle Boxes Must Not Be Empty");
+        return;
+    // if start date > end date do not post
+    }else if(new Date(start_date+" "+start_time).getTime() > new Date(end_date+" "+end_time).getTime()){
+        alert("Start Date and Time must be less than End Date and Time");
         return;
     }else{
         post('/events_update',data, event_msg);
