@@ -28,7 +28,7 @@ secret_key = options["secret_key"]
 SECRET_KEY = secret_key
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 # Updated to allow specific domain names
 ALLOWED_HOSTS = [
         'ec2-3-250-87-130.eu-west-1.compute.amazonaws.com',
